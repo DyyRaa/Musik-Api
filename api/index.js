@@ -1,4 +1,4 @@
-const YTMusic = require("youtube-music-api");
+const YTMusic = require("ytmusic-api");
 
 const ytmusic = new YTMusic();
 
