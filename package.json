@@ -7,10 +7,10 @@
     "dev": "vercel dev",
     "start": "vercel dev"
   },
-  "dependencies": {
+"dependencies": {
     "express": "^4.19.2",
-    "serverless-http": "^3.2.0"
-  },
+    "ytmusic-api": "^1.0.0"
+}
   "keywords": [
     "hady",
     "api",
