@@ -1,71 +1,41 @@
 const express = require("express");
-const yts = require("yt-search");
-const ytdl = require("@distube/ytdl-core");
-const ffmpeg = require("fluent-ffmpeg");
 const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-const DOWNLOAD_DIR = path.join(__dirname, "downloads");
+const publicDir = path.join(__dirname, "hady");
 
-if (!fs.existsSync(DOWNLOAD_DIR)) {
-    fs.mkdirSync(DOWNLOAD_DIR);
-}
+app.use(express.static(publicDir));
 
-app.get("/hady", async (req, res) => {
+app.get("hady", (req, res) => {
     try {
-        const keyword = req.query.q;
+        const files = fs.readdirSync(publicDir)
+            .filter(file => file.toLowerCase().endsWith(".mp3"));
 
-        if (!keyword) {
-            return res.status(400).json({
-                status: false,
-                message: "Parameter q wajib diisi"
-            });
-        }
-
-        const search = await yts(keyword);
-
-        if (!search.videos.length) {
+        if (!files.length) {
             return res.status(404).json({
                 status: false,
-                message: "Video tidak ditemukan"
+                message: "Tidak ada file MP3."
             });
         }
 
-        const video = search.videos[0];
+        const protocol = req.protocol;
+        const host = req.get("host");
 
-        const filename =
-            video.title.replace(/[\\/:*?"<>|]/g, "") + ".mp3";
+        const data = files.map(file => ({
+            judul: path.parse(file).name,
+            link: `${protocol}://${host}/${encodeURIComponent(file)}`
+        }));
 
-        const output = path.join(DOWNLOAD_DIR, filename);
-
-        const stream = ytdl(video.url, {
-            quality: "highestaudio",
-            filter: "audioonly"
+        res.json({
+            status: true,
+            total: data.length,
+            result: data
         });
 
-        ffmpeg(stream)
-            .audioBitrate(128)
-            .format("mp3")
-            .save(output)
-            .on("end", () => {
-                res.download(output, filename, () => {
-                    fs.unlink(output, () => {});
-                });
-            })
-            .on("error", (err) => {
-                console.error(err);
-                res.status(500).json({
-                    status: false,
-                    message: err.message
-                });
-            });
-
     } catch (err) {
-        console.error(err);
-
         res.status(500).json({
             status: false,
             message: err.message
