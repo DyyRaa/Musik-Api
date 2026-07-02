@@ -10,7 +10,7 @@
 "dependencies": {
     "express": "^4.19.2",
     "ytmusic-api": "^1.0.0"
-}
+},
   "keywords": [
     "hady",
     "api",
