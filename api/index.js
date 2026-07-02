@@ -5,7 +5,7 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const publicDir = path.join(__dirname, "public");
+const publicDir = path.join(process.cwd(), "public");
 
 app.use(express.static(publicDir));
 
@@ -44,7 +44,7 @@ app.get("/hady", (req, res) => {
 app.get("/", (req, res) => {
     res.json({
         status: true,
-        author: "API Musik",
+        author: "Hady Zen'in",
         endpoint: "/hady?q=judul"
     });
 });
