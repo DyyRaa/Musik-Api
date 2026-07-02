@@ -1,44 +1,39 @@
-const express = require("express")
-const YTMusic = require("ytmusic-api")
+const YTMusic = require("youtube-music-api");
 
-const app = express()
-const port = 3000
+const ytmusic = new YTMusic();
 
-const ytmusic = new YTMusic()
-let initialized = false
+let initialized = false;
 
-async function initYT() {
+async function init() {
   if (!initialized) {
-    await ytmusic.initialize()
-    initialized = true
+    await ytmusic.initalize();
+    initialized = true;
   }
 }
 
-app.get("/hady", async (req, res) => {
+module.exports = async (req, res) => {
   try {
-    const query = req.query.q
+    await init();
 
-    if (!query) {
+    const q = req.query.q;
+
+    if (!q) {
       return res.status(400).json({
-        error: "Query parameter 'q' wajib diisi"
-      })
+        error: "Query 'q' wajib diisi"
+      });
     }
 
-    await initYT()
+    // pakai searchSongs sesuai permintaan kamu
+    const songs = await ytmusic.searchSongs(q);
 
-    const results = await ytmusic.search(query)
+    return res.status(200).json({
+      query: q,
+      songs
+    });
 
-    res.json({
-      query,
-      results
-    })
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       error: err.message
-    })
+    });
   }
-})
-
-app.listen(port, () => {
-  console.log(`API berhasil`)
-})
+};
