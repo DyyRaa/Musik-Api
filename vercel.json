@@ -3,7 +3,7 @@
   "routes": [
     {
       "src": "/hady",
-      "dest": "/index.js"
+      "dest": "/api/index.js"
     }
   ]
 }
