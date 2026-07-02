@@ -2,7 +2,7 @@
   "name": "hady-musik",
   "version": "1.0.0",
   "description": "API musik punya hady",
-  "main": "index.js",
+  "main": "hady.js",
   "scripts": {
     "dev": "vercel dev",
     "start": "vercel dev"
