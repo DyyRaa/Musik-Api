@@ -1,54 +1,44 @@
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
+const express = require("express")
+const YTMusic = require("ytmusic-api")
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const app = express()
+const port = 3000
 
-const publicDir = path.join(process.cwd(), "public");
+const ytmusic = new YTMusic()
+let initialized = false
 
-app.use(express.static(publicDir));
+async function initYT() {
+  if (!initialized) {
+    await ytmusic.initialize()
+    initialized = true
+  }
+}
 
-app.get("/hady", (req, res) => {
-    try {
-        const keyword = (req.query.q || "").trim().toLowerCase();
+app.get("/hady", async (req, res) => {
+  try {
+    const query = req.query.q
 
-        const files = fs.readdirSync(publicDir)
-            .filter(file => file.toLowerCase().endsWith(".mp3"));
-
-        const results = files
-            .filter(file => {
-                if (!keyword) return true;
-                return file.toLowerCase().includes(keyword);
-            })
-            .map(file => ({
-                judul: path.parse(file).name,
-                link: `${req.protocol}://${req.get("host")}/${encodeURIComponent(file)}`
-            }));
-
-        res.json({
-            status: true,
-            total: results.length,
-            result: results
-        });
-
-    } catch (err) {
-        res.status(500).json({
-            status: false,
-            message: err.message
-        });
+    if (!query) {
+      return res.status(400).json({
+        error: "Query parameter 'q' wajib diisi"
+      })
     }
-});
 
-// Halaman utama
-app.get("/", (req, res) => {
+    await initYT()
+
+    const results = await ytmusic.search(query)
+
     res.json({
-        status: true,
-        author: "Hady Zen'in",
-        endpoint: "/hady?q=judul"
-    });
-});
+      query,
+      results
+    })
+  } catch (err) {
+    res.status(500).json({
+      error: err.message
+    })
+  }
+})
 
-app.listen(PORT, () => {
-    console.log(`Server berjalan`);
-});
+app.listen(port, () => {
+  console.log(`API berhasil`)
+})
