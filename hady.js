@@ -9,30 +9,27 @@ const publicDir = path.join(__dirname, "hady");
 
 app.use(express.static(publicDir));
 
-app.get("hady", (req, res) => {
+app.get("/hady", (req, res) => {
     try {
+        const keyword = (req.query.q || "").trim().toLowerCase();
+
         const files = fs.readdirSync(publicDir)
             .filter(file => file.toLowerCase().endsWith(".mp3"));
 
-        if (!files.length) {
-            return res.status(404).json({
-                status: false,
-                message: "Tidak ada file MP3."
-            });
-        }
-
-        const protocol = req.protocol;
-        const host = req.get("host");
-
-        const data = files.map(file => ({
-            judul: path.parse(file).name,
-            link: `${protocol}://${host}/${encodeURIComponent(file)}`
-        }));
+        const results = files
+            .filter(file => {
+                if (!keyword) return true;
+                return file.toLowerCase().includes(keyword);
+            })
+            .map(file => ({
+                judul: path.parse(file).name,
+                link: `${req.protocol}://${req.get("host")}/${encodeURIComponent(file)}`
+            }));
 
         res.json({
             status: true,
-            total: data.length,
-            result: data
+            total: results.length,
+            result: results
         });
 
     } catch (err) {
@@ -41,6 +38,15 @@ app.get("hady", (req, res) => {
             message: err.message
         });
     }
+});
+
+// Halaman utama
+app.get("/", (req, res) => {
+    res.json({
+        status: true,
+        author: "API Musik",
+        endpoint: "/hady?q=judul"
+    });
 });
 
 app.listen(PORT, () => {
