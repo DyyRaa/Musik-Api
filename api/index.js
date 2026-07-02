@@ -1,12 +1,12 @@
-const YTMusic = require("ytmusic-api");
+const YMusic = require("ytmusic-api");
 
-const ytmusic = new YTMusic();
+const ytmusic = new YMusic();
 
 let initialized = false;
 
 async function init() {
   if (!initialized) {
-    await ytmusic.initalize();
+    await ytmusic.initialize();
     initialized = true;
   }
 }
@@ -15,16 +15,11 @@ module.exports = async (req, res) => {
   try {
     await init();
 
-    const q = req.query.q;
+    const q = req.query.q || "Tidak akan pernah menyerahkanmu";
 
-    if (!q) {
-      return res.status(400).json({
-        error: "Query 'q' wajib diisi"
-      });
-    }
-
-    // pakai searchSongs sesuai permintaan kamu
     const songs = await ytmusic.searchSongs(q);
+
+    console.log("lagu:", songs);
 
     return res.status(200).json({
       query: q,
